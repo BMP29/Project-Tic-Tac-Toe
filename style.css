@@ -3,9 +3,26 @@
     padding: 0;
 }
 
+body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+#card {
+    margin-top: 130px;
+    width: 700px;
+    height: 400px;
+}
+
 #board {
+    height: 100%;
     display: grid;
+    justify-content: center;
+    align-content: center;
+    background-color: #94ff2a;
 
     grid-template-columns: repeat(3, 100px);
     grid-template-rows: repeat(3, 100px);
+    gap: 10px;
 }
