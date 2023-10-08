@@ -1,18 +1,31 @@
+@import url('https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;0,1000;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900;1,1000&display=swap');
+
+
 * {
     margin: 0;
     padding: 0;
-}
-
-body {
-    display: flex;
-    justify-content: center;
-    align-items: center;
+    font-family: 'Nunito', sans-serif;
+    box-sizing: border-box;
 }
 
 #card {
-    margin-top: 130px;
-    width: 700px;
-    height: 400px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    height: 100vh;
+    width: 100%;
+}
+
+#gameWindow {
+    box-shadow: 0px 5px 20px 11px #0000001c;
+    height: 70vh;
+    width: 55vw;
+    border-radius: 10px;
+}
+
+#board, nav {
+    width: auto;
 }
 
 #board {
@@ -20,9 +33,44 @@ body {
     display: grid;
     justify-content: center;
     align-content: center;
-    background-color: #94ff2a;
+    background-color: #00ff8b;
+    border-bottom-right-radius: 10px;
+    border-bottom-left-radius: 10px;
+    border: 2px solid #157100;
 
-    grid-template-columns: repeat(3, 100px);
-    grid-template-rows: repeat(3, 100px);
+    grid-template-columns: repeat(3, min(25%, 100px));
+    grid-template-rows: repeat(3, min(25%, 100px));
     gap: 10px;
+    flex: 1;
+}
+
+#board button {
+    border-radius: 8px;
+    border: 3px solid #166f64;
+    background-color: #91ff77bd;
+    color: #ffffff;
+    font-size: 50px;
+    font-weight: 700;
+    transition: 0.2s;
+}
+
+#board button:hover {
+    box-shadow: 0px 0px 105px 15px white;
+    border-color: white;
+    z-index: 1;
+}
+
+nav {
+    border-top-right-radius: 10px;
+    border-top-left-radius: 10px;
+    border: 2px solid #157100;
+    border-bottom: none;
+    background-color: white;
+    padding: 10px;
+}
+
+@media (max-width: 667px) {
+    #gameWindow {
+        width: 85vw;
+    }
 }
