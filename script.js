@@ -1,8 +1,10 @@
-const btnCells = document.querySelectorAll('[type]');
+const btnCells = document.querySelectorAll('.cell');
 const COLS = 3;
 const ROWS = 3;
-const playerX = playerFctry('playerX', 'X');
-const playerO = playerFctry('playerO', 'O');
+const playerX = playerFctry('X', 'X');
+const playerO = playerFctry('O', 'O');
+
+
 
 const gameBoard = (function() {
     const board = [];
@@ -116,10 +118,69 @@ function playerFctry(name, marker) {
 
 const gameController = (function(playerX, playerO) {
     let activePlayer = playerX;
+    const modal = document.getElementById("ModalW");
+    const btnClose = document.getElementById("btn-close");
+    const spanWinner = document.getElementById("winner");
+    const wMsg = document.getElementById('wMsg');
+    let modalDisplay = window.getComputedStyle(modal).getPropertyValue('display');
+    let modalOpacity = window.getComputedStyle(modal).getPropertyValue('opacity');
 
     const getActivePlayer = () => { return activePlayer; };
     const switchPlayerTurn = () => { activePlayer =  activePlayer === playerX ? playerO : playerX; };
-    const resetGame = () => { gameBoard.resetBoard(); activePlayer = playerX; }
+    const resetGame = () => { gameBoard.resetBoard(); activePlayer = playerX; };
+
+    //changes the modal display
+    const ModalOnOff = () => {
+        console.log(modalDisplay);
+        if(modalDisplay === 'none') {
+            modal.style.display = 'block'; 
+            modalDisplay = 'block';
+        } else {
+            setTimeout(() => { modal.style.display = 'none';  }, 150);
+            modalDisplay = 'none';
+        }
+        console.log(modalDisplay);
+    };
+
+    //changes the modal opacity
+    const fadeInOut = () => {
+        if(modalOpacity === '0') {
+            setTimeout(() => { modal.style.opacity = '1'; }, 50);
+            modalOpacity = '1';
+        } else {
+            modal.style.opacity = '0';
+            modalOpacity = '0';
+        }
+    };
+
+    //closes modal when btnClose is clicked 
+    btnClose.addEventListener('click', () => {
+        fadeInOut();
+        ModalOnOff();
+    });
+
+    // When the user clicks anywhere outside of the modal, close it
+    window.addEventListener('click', (event) => {
+        if (event.target == modal) {
+            fadeInOut();
+            ModalOnOff();
+        }
+    });
+
+    //display modal with the winner
+    const showWinner = (name) => {
+        spanWinner.textContent = name;
+        if(name === 'Draw') {
+            wMsg.style.display = 'none';
+            spanWinner.style.fontSize = '7.5rem';
+        }else {
+            wMsg.style.display = 'block';
+            spanWinner.style.fontSize = '12rem';
+        }
+
+        ModalOnOff();
+        fadeInOut();
+    }
 
     //execute a turn with current player
     const playTurn = (btn) => {
@@ -128,15 +189,19 @@ const gameController = (function(playerX, playerO) {
 
         const moveValid = gameBoard.addMarker(row, col, activePlayer);
 
-        //checks if the move made by the player completes a straigth line
+        //checks if the move made by the player completes a straight line
         //if it does, than show that he won and reset the game
         if(gameBoard.checkStraightAdjLines(row, col)) {
             console.log(activePlayer.getName() + " won");
+            showWinner(activePlayer.getName());
             resetGame();
+
             return;
         }else if(gameBoard.isBoardFull()){
             console.log("DRAW!");
+            showWinner('Draw');
             resetGame();
+
             return;
         }
         if(moveValid) switchPlayerTurn();

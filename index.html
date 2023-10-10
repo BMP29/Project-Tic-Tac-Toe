@@ -25,18 +25,26 @@
             </nav>
     
             <div id="board">
-                <button type="button" data-row="0" data-col="0"></button>
-                <button type="button" data-row="0" data-col="1"></button>
-                <button type="button" data-row="0" data-col="2"></button>
-                <button type="button" data-row="1" data-col="0"></button>
-                <button type="button" data-row="1" data-col="1"></button>
-                <button type="button" data-row="1" data-col="2"></button>
-                <button type="button" data-row="2" data-col="0"></button>
-                <button type="button" data-row="2" data-col="1"></button>
-                <button type="button" data-row="2" data-col="2"></button>
+                <button type="button" data-row="0" data-col="0" class="cell"></button>
+                <button type="button" data-row="0" data-col="1" class="cell"></button>
+                <button type="button" data-row="0" data-col="2" class="cell"></button>
+                <button type="button" data-row="1" data-col="0" class="cell"></button>
+                <button type="button" data-row="1" data-col="1" class="cell"></button>
+                <button type="button" data-row="1" data-col="2" class="cell"></button>
+                <button type="button" data-row="2" data-col="0" class="cell"></button>
+                <button type="button" data-row="2" data-col="1" class="cell"></button>
+                <button type="button" data-row="2" data-col="2" class="cell"></button>
             </div>
         </div>
     </div>
 
+
+    <section id="ModalW" class="modal">
+        <div class="modal-content">
+            <h1 id="wMsg">The Winner is</h1>
+            <span id="winner"></span>
+            <button id="btn-close">Ok</button>
+        </div>
+    </section>
 </body>
 </html>
