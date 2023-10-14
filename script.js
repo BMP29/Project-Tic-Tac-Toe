@@ -1,10 +1,23 @@
 const btnCells = document.querySelectorAll('.cell');
 const COLS = 3;
 const ROWS = 3;
-const playerX = playerFctry('X', 'X');
-const playerO = playerFctry('O', 'O');
 
+function Cell() {
+    let content = '';
 
+    const addMarker = (marker) => { content = marker; };
+    const getContent = () => { return content; };
+
+    return { addMarker, getContent };
+}
+
+function playerFctry(name, marker) {
+
+    const getName = () => { return name; };
+    const getMarker = () => { return marker; };
+
+    return { getName, getMarker };
+}
 
 const gameBoard = (function() {
     const board = [];
@@ -62,7 +75,7 @@ const gameBoard = (function() {
         || vCells === MAX_SCORE 
         || dCells === MAX_SCORE 
         || inverseDCells === MAX_SCORE)
-        { return true;}
+        { return true; }
     };
 
     //checks if all cells are marked
@@ -93,44 +106,242 @@ const gameBoard = (function() {
             board[row][col].addMarker(marker.getMarker());
             _render();
             return true;
+
         }
         return false;
     };
 
-    return { addMarker, checkStraightAdjLines, isBoardFull, resetBoard }
+    const getBoardCopy = () => { return board; }; 
+
+    return { addMarker, checkStraightAdjLines, isBoardFull, resetBoard, getBoardCopy }
 })();
 
-function Cell() {
-    let content = '';
+const PerfectPlayer = (() => {
+    const _evaluate = (b) => { 
+        let player = 'O';
+        let opponent = 'X';
+        // Checking for Rows for X or O victory. 
+        for(let row = 0; row < 3; row++) 
+        { 
+            if (b[row][0].getContent() == b[row][1].getContent() && 
+                b[row][1].getContent() == b[row][2].getContent()) 
+            { 
+                if (b[row][0].getContent() == player) 
+                    return +10; 
+                    
+                else if (b[row][0].getContent() == opponent) 
+                    return -10; 
+            } 
+        } 
+    
+        // Checking for Columns for X or O victory. 
+        for(let col = 0; col < 3; col++) 
+        { 
+            if (b[0][col].getContent() == b[1][col].getContent() && 
+                b[1][col].getContent() == b[2][col].getContent()) 
+            { 
+                if (b[0][col].getContent() == player) 
+                    return +10; 
+    
+                else if (b[0][col].getContent() == opponent) 
+                    return -10; 
+            } 
+        } 
+    
+        // Checking for Diagonals for X or O victory. 
+        if (b[0][0].getContent() == b[1][1].getContent() && 
+            b[1][1].getContent() == b[2][2].getContent()) 
+        { 
+            if (b[0][0].getContent() == player) 
+                return +10; 
+                
+            else if (b[0][0].getContent() == opponent) 
+                return -10; 
+        } 
+    
+        if (b[0][2].getContent() == b[1][1].getContent() &&  
+            b[1][1].getContent() == b[2][0].getContent()) 
+        { 
+            if (b[0][2].getContent() == player) 
+                return +10; 
+                
+            else if (b[0][2].getContent() == opponent) 
+                return -10; 
+        } 
+    
+        // Else if none of them have 
+        // won then return 0 
+        return 0; 
+    } 
 
-    const addMarker = (marker) => { content = marker; };
-    const getContent = () => { return content; };
+    // This is the minimax function. It  
+    // considers all the possible ways  
+    // the game can go and returns the  
+    // value of the board 
+    const _minimax = (board, depth, isMax) => {
+        let score = _evaluate(board); 
+        let player = 'O';
+        let opponent = 'X';
+    
+        // If Maximizer has won the game 
+        // return his/her evaluated score 
+        if (score == 10) 
+            return score; 
+    
+        // If Minimizer has won the game 
+        // return his/her evaluated score 
+        if (score == -10) 
+            return score; 
+    
+        // If there are no more moves and 
+        // no winner then it is a tie 
+        if (!gameBoard.isBoardFull() == false) 
+            return 0; 
+    
+        // If this maximizer's move 
+        if (isMax) 
+        { 
+            let best = -1000; 
+    
+            // Traverse all cells 
+            for(let i = 0; i < 3; i++) 
+            { 
+                for(let j = 0; j < 3; j++) 
+                { 
+                    
+                    // Check if cell is empty 
+                    if (board[i][j].getContent() == '') 
+                    { 
+                        
+                        // Make the move 
+                        board[i][j].addMarker(player); 
+    
+                        // Call minimax recursively  
+                        // and choose the maximum value 
+                        best = Math.max(best, _minimax(board, 
+                                        depth + 1, !isMax)); 
+    
+                        // Undo the move 
+                        board[i][j].addMarker('');
+                    } 
+                } 
+            } 
+            return best; 
+        } 
+    
+        // If this minimizer's move 
+        else
+        { 
+            let best = 1000; 
+    
+            // Traverse all cells 
+            for(let i = 0; i < 3; i++) 
+            { 
+                for(let j = 0; j < 3; j++) 
+                { 
+                    
+                    // Check if cell is empty 
+                    if (board[i][j].getContent() == '') 
+                    { 
+                        
+                        // Make the move 
+                        board[i][j].addMarker(opponent); 
+    
+                        // Call minimax recursively and  
+                        // choose the minimum value 
+                        best = Math.min(best, _minimax(board, 
+                                        depth + 1, !isMax)); 
+    
+                        // Undo the move 
+                        board[i][j].addMarker(''); 
+                    } 
+                } 
+            } 
+            return best; 
+        } 
+    } 
 
-    return { addMarker, getContent };
-}
+    // This will return the best possible 
+    // move for the player 
+    const findBestMove = () => {
+        const player = 'O';
+        let bestVal = -Infinity; 
+        let bestMove = [];
+        let board = gameBoard.getBoardCopy();
 
-function playerFctry(name, marker) {
-    const getName = () => { return name; };
-    const getMarker = () => { return marker; };
+        // Traverse all cells, evaluate  
+        // minimax function for all empty  
+        // cells. And return the cell 
+        // with optimal value. 
+        for(let i = 0; i < 3; i++) 
+        { 
+            for(let j = 0; j < 3; j++) 
+            { 
+                
+                // Check if cell is empty 
+                if (board[i][j].getContent() == '') 
+                { 
+                    
+                    // Make the move 
+                    board[i][j].addMarker(player);
 
-    return { getName, getMarker };
-}
+                    // compute evaluation function  
+                    // for this move. 
+                    let moveVal = _minimax(board, 0, false); 
+    
+                    // Undo the move 
+                    board[i][j].addMarker('');
+    
+                    // If the value of the current move  
+                    // is more than the best value, then  
+                    // update best 
+                    if (moveVal > bestVal) 
+                    { 
+                        bestMove[0] = i;
+                        bestMove[1] = j;
+                        bestVal = moveVal; 
+                    } 
+                } 
+            } 
+        } 
+    
+        return bestMove; 
+    }
 
-const gameController = (function(playerX, playerO) {
+    return { findBestMove };
+})();
+
+const gameController = (function() {
+    const playerX = playerFctry('X', 'X');
+    const playerO = playerFctry('O', 'O');
+
     let activePlayer = playerX;
+    let gameMd;
     const modal = document.getElementById("ModalW");
     const btnClose = document.getElementById("btn-close");
     const spanWinner = document.getElementById("winner");
     const wMsg = document.getElementById('wMsg');
+    const gameMode = document.getElementById('gameModes');
     let modalDisplay = window.getComputedStyle(modal).getPropertyValue('display');
     let modalOpacity = window.getComputedStyle(modal).getPropertyValue('opacity');
 
-    const getActivePlayer = () => { return activePlayer; };
-    const switchPlayerTurn = () => { activePlayer =  activePlayer === playerX ? playerO : playerX; };
-    const resetGame = () => { gameBoard.resetBoard(); activePlayer = playerX; };
+    const _resetGame = () => { gameBoard.resetBoard(); activePlayer = playerX; };
+
+    const _switchPlayerTurn = () => { 
+        activePlayer =  activePlayer === playerX ? playerO : playerX; 
+    };
+
+    gameMode.addEventListener('change', () => {
+        gameMd = gameMode.value;
+
+        if(gameMd === 'pve') {
+            const ai = activePlayer === playerX ? playerO : playerX;
+            console.log(ai.getMarker());
+        }
+    });
 
     //changes the modal display
-    const ModalOnOff = () => {
+    const _ModalOnOff = () => {
         console.log(modalDisplay);
         if(modalDisplay === 'none') {
             modal.style.display = 'block'; 
@@ -143,7 +354,7 @@ const gameController = (function(playerX, playerO) {
     };
 
     //changes the modal opacity
-    const fadeInOut = () => {
+    const _fadeInOut = () => {
         if(modalOpacity === '0') {
             setTimeout(() => { modal.style.opacity = '1'; }, 50);
             modalOpacity = '1';
@@ -155,20 +366,20 @@ const gameController = (function(playerX, playerO) {
 
     //closes modal when btnClose is clicked 
     btnClose.addEventListener('click', () => {
-        fadeInOut();
-        ModalOnOff();
+        _fadeInOut();
+        _ModalOnOff();
     });
 
     // When the user clicks anywhere outside of the modal, close it
     window.addEventListener('click', (event) => {
         if (event.target == modal) {
-            fadeInOut();
-            ModalOnOff();
+            _fadeInOut();
+            _ModalOnOff();
         }
     });
 
     //display modal with the winner
-    const showWinner = (name) => {
+    const _showWinner = (name) => {
         spanWinner.textContent = name;
         if(name === 'Draw') {
             wMsg.style.display = 'none';
@@ -178,39 +389,46 @@ const gameController = (function(playerX, playerO) {
             spanWinner.style.fontSize = '12rem';
         }
 
-        ModalOnOff();
-        fadeInOut();
+        _ModalOnOff();
+        _fadeInOut();
     }
 
     //execute a turn with current player
-    const playTurn = (btn) => {
-        const row = Math.floor([...btnCells].indexOf(btn)/ROWS); // GIVES THE ROW POSITION
-        const col = Math.floor([...btnCells].indexOf(btn)%COLS); // GIVES THE COLUMN POSITION
-
+    const _playTurn = (row, col) => {
         const moveValid = gameBoard.addMarker(row, col, activePlayer);
+        let winner = undefined;
 
         //checks if the move made by the player completes a straight line
         //if it does, than show that he won and reset the game
         if(gameBoard.checkStraightAdjLines(row, col)) {
             console.log(activePlayer.getName() + " won");
-            showWinner(activePlayer.getName());
-            resetGame();
-
-            return;
+            _showWinner(activePlayer.getName());
+            winner = activePlayer.getName();
+            _resetGame();
+            
         }else if(gameBoard.isBoardFull()){
             console.log("DRAW!");
-            showWinner('Draw');
-            resetGame();
-
-            return;
+            _showWinner('Draw');
+            winner = 'Draw';
+            _resetGame();
         }
-        if(moveValid) switchPlayerTurn();
+        
+        if(moveValid && winner === undefined) _switchPlayerTurn();
+        return { winner, moveValid };
     }
 
-    //binds the playTurn method to every buttonCell
+    //binds the playTurn method and Ai-Turn logic to every buttonCell
     btnCells.forEach(btn => {
-        btn.addEventListener('click', playTurn.bind(this, btn));
-    });
+        btn.addEventListener('click', () => {
+            const row = Math.floor([...btnCells].indexOf(btn)/ROWS); // GIVES THE ROW POSITION
+            const col = Math.floor([...btnCells].indexOf(btn)%COLS); // GIVES THE COLUMN POSITION
 
-    return{ getActivePlayer }
-})(playerX, playerO);
+            let data = _playTurn(row, col);
+
+            if(gameMd === 'pve' && data.winner === undefined && data.moveValid) {
+                const aiMove = PerfectPlayer.findBestMove();
+                _playTurn(aiMove[0], aiMove[1]);
+            }
+        });
+    });
+})();
